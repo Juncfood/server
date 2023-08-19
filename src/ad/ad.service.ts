@@ -50,7 +50,7 @@ export class AdService {
     return newAd;
   }
 
-  async updateAd(body: UpdateAdInput, register: boolean) {
+  async updateAd(body: UpdateAdInput) {
     const { adId, ...data } = body;
 
     const updatedAd = await this.prisma.ad.update({
@@ -60,11 +60,44 @@ export class AdService {
 
       data: {
         ...data,
-        occupied: register,
+        occupied: true,
       },
     });
 
     return updatedAd;
+  }
+
+  async initAd(adId: string) {
+    let baseImageUrl = '';
+
+    const targetAd = await this.prisma.ad.findUnique({
+      where: {
+        id: adId,
+      },
+    });
+
+    switch (targetAd.type) {
+      case AdType.DOORSIDELEFT:
+      case AdType.DOORSIDERIGHT:
+        baseImageUrl =
+          'https://nwllvhheepuafgifrtlu.supabase.co/storage/v1/object/public/images/doorside.png';
+        break;
+      default:
+        baseImageUrl =
+          'https://nwllvhheepuafgifrtlu.supabase.co/storage/v1/object/public/images/upperside.png';
+        break;
+    }
+
+    return this.prisma.ad.update({
+      where: {
+        id: adId,
+      },
+      data: {
+        title: null,
+        imageUrl: baseImageUrl,
+        occupied: false,
+      },
+    });
   }
 
   async deleteOneById(id: string) {

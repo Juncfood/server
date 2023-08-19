@@ -20,12 +20,12 @@ export class AdController {
 
   @Post('register')
   async registerAd(@Body() body: UpdateAdInput) {
-    return this.adService.updateAd(body, true);
+    return this.adService.updateAd(body);
   }
 
-  @Post('unregister')
-  async deregisterAd(@Body() body: UpdateAdInput) {
-    return this.adService.updateAd(body, false);
+  @Post(':id/unregister')
+  async deregisterAd(@Param('id') id: string) {
+    return this.adService.initAd(id);
   }
 
   @Delete(':id')
