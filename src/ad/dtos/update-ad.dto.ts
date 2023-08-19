@@ -1,14 +1,15 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsString } from 'class-validator';
 
 export class UpdateAdInput {
   @IsString()
   adId: string;
 
   @IsString()
-  @IsOptional()
-  title?: string;
+  title: string;
 
   @IsString()
-  @IsOptional()
-  imageUrl?: string;
+  imageUrl: string;
+
+  @IsString()
+  landingUrl: string;
 }

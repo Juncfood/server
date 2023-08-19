@@ -33,6 +33,8 @@ model Ad {
   occupied    Boolean @default(false)
   preoccupied Boolean @default(false)
 
+  landingUrl String @default("https://asia.hackjunction.com/")
+
   line   Line   @relation(fields: [lineId], references: [id])
   lineId String
 
@@ -61,8 +63,8 @@ model Line {
   id               String    @id @default(uuid())
   name             String
   primaryColor     String    @default("#000000")
-  startStationName String    @default("시청")
-  endStationName   String    @default("종로3가")
+  startStationName String
+  endStationName   String
   stations         Station[]
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt

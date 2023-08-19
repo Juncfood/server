@@ -14,7 +14,7 @@ export class LineService {
   async createLine(body: CreateLineInput) {
     const newLine = await this.prisma.line.create({
       data: {
-        name: body.name,
+        ...body,
       },
     });
 
