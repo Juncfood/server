@@ -1,5 +1,6 @@
 import { createCanvas, loadImage } from 'canvas';
 import * as fs from 'fs';
+import { parse } from 'node-html-parser';
 import * as qr from 'qrcode';
 
 import { HttpService } from '@nestjs/axios';
@@ -17,12 +18,59 @@ export class AdService {
     private readonly httpService: HttpService,
   ) {}
 
+  async getAuthToken() {
+    const authToken = await this.prisma.authToken.findFirst();
+
+    if (!authToken) {
+      throw new Error('Auth token not found');
+    }
+
+    return authToken.token;
+  }
+
+  async refreshAuthToken() {
+    const formData = new URLSearchParams();
+
+    formData.append('username', 'amthetop21@gmail.com');
+    formData.append('password', process.env.ESL_AUTH_PASSWORD);
+
+    const { data } = await this.httpService.axiosRef.post(
+      'https://stage00.common.solumesl.com/common/token',
+      formData,
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      },
+    );
+
+    const root = parse(data);
+
+    const textArea = root.querySelector('#textarea');
+
+    if (!textArea) {
+      throw new Error('Text area not found');
+    }
+
+    const token = textArea.innerText;
+
+    await this.prisma.authToken.deleteMany();
+
+    await this.prisma.authToken.create({
+      data: {
+        token,
+      },
+    });
+
+    return token;
+  }
+
   async createQrCodeImage(url: string, title: string) {
     const FRAME_WIDTH = 250;
     const FRAME_HEIGHT = 122;
     const QR_CODE_SIZE = 60;
-    const TEXT_FONT = '14px Arial';
-    const TEXT_MARGIN = 5;
+    const TEXT_FONT = '20px Arial';
+    const TEXT_MARGIN = 0;
 
     const qrCodeOptions: qr.QRCodeToDataURLOptions = {
       width: QR_CODE_SIZE,
@@ -51,11 +99,6 @@ export class AdService {
     const outputStream = fs.createWriteStream('./qr-code.png');
     const pngStream = canvas.createPNGStream();
     pngStream.pipe(outputStream);
-    outputStream.on('finish', () => {
-      console.log('Image saved:', './qr-code.png');
-      const base64Data = canvas.toDataURL().split(',')[1];
-      console.log('Base64 Image:', base64Data);
-    });
 
     return canvas.toDataURL().split(',')[1];
   }
@@ -63,8 +106,9 @@ export class AdService {
   async uploadToEsl(content: string) {
     const ENDPOINT =
       'https://stage00.common.solumesl.com/common/api/v1/labels/contents/image?company=JC09&stationCode=1111';
-    const AUTH_TOKEN =
-      'Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6Ilg1ZVhrNHh5b2pORnVtMWtsMll0djhkbE5QNC1jNTdkTzZRR1RWQndhTmsiLCJ0eXAiOiJKV1QifQ.eyJpZHAiOiJMb2NhbEFjY291bnQiLCJvaWQiOiI0NGU2ZDdkZS1hYmUwLTRkMWItYjI3Yi00YTliZDA1OTQzNGEiLCJzdWIiOiI0NGU2ZDdkZS1hYmUwLTRkMWItYjI3Yi00YTliZDA1OTQzNGEiLCJuYW1lIjoiYW10aGV0b3AyMSIsIm5ld1VzZXIiOmZhbHNlLCJleHRlbnNpb25fQWRtaW5BcHByb3ZlZCI6dHJ1ZSwiZXh0ZW5zaW9uX0N1c3RvbWVyQ29kZSI6IkpDMDkiLCJleHRlbnNpb25fQ3VzdG9tZXJMZXZlbCI6IjEiLCJlbWFpbHMiOlsiYW10aGV0b3AyMUBnbWFpbC5jb20iXSwidGZwIjoiQjJDXzFfUk9QQ19BdXRoIiwiYXpwIjoiZTA4ZTU0ZmYtNWJiMS00YWU3LWFmZGUtYjljZGM4ZmEyM2FlIiwidmVyIjoiMS4wIiwiaWF0IjoxNjkyNDUyMzcyLCJhdWQiOiJlMDhlNTRmZi01YmIxLTRhZTctYWZkZS1iOWNkYzhmYTIzYWUiLCJleHAiOjE2OTI1Mzg3NzIsImlzcyI6Imh0dHBzOi8vc29sdW1iMmMuYjJjbG9naW4uY29tL2IwYzhlM2Q5LTA4ZmEtNDg3YS1hZmYxLTg1YmFlMTFmYzZjNS92Mi4wLyIsIm5iZiI6MTY5MjQ1MjM3Mn0.Duw3AdDATjLQTL1f9jItig6Q1ars2l5qirvFJXk3VyFXChNqYvu2INSoRx36Q3MX5UmF2u6JTpdaSlZfK0RO946waffiaD0ssN1LVAsrGYSQHQwgN2lDvlIieiuriS23wF0RVuV9yHd4XbhOrc1JilbHCJ6XBgMCYPBCgJVpLTIcxBPxer10neGJG95Z4rcZt7YG1cFn3k-oAkzVvzt7MMpo61_e-6JxaKQwYKyH0nB_zjt1gqwXhaAlhil3FlkLe0k_5kZFc7Ap-RFVem1nzlsc_xfE_wHC38v7qokged-HnKsOjs9Hzt7KfCSTDv6iHixmG3vUSoRR1SAoJSJcLw';
+
+    const jwtToken = await this.getAuthToken();
+    const AUTH_TOKEN = `Bearer ${jwtToken}`;
 
     try {
       await this.httpService.axiosRef.post(
@@ -106,8 +150,15 @@ export class AdService {
         },
       );
     } catch (e) {
-      console.log(e);
-      return false;
+      const message = e.message;
+      const isunauthorized = message.includes('401');
+
+      if (isunauthorized) {
+        await this.refreshAuthToken();
+        return this.uploadToEsl(content);
+      } else {
+        return false;
+      }
     }
 
     return true;
