@@ -1,5 +1,4 @@
 import { createCanvas, loadImage } from 'canvas';
-import * as fs from 'fs';
 import { parse } from 'node-html-parser';
 import * as qr from 'qrcode';
 
@@ -96,10 +95,6 @@ export class AdService {
     const textY = qrCodeY + QR_CODE_SIZE + TEXT_MARGIN + 20; // 텍스트의 높이를 고려하여 조절
     ctx.fillText(title, textX, textY);
 
-    const outputStream = fs.createWriteStream('./qr-code.png');
-    const pngStream = canvas.createPNGStream();
-    pngStream.pipe(outputStream);
-
     return canvas.toDataURL().split(',')[1];
   }
 
@@ -119,46 +114,44 @@ export class AdService {
     ];
 
     try {
-      for (const labelId of labelIds) {
-        await this.httpService.axiosRef.post(
-          ENDPOINT,
+      const labels = labelIds.map((labelId) => ({
+        labelCode: labelId,
+        frontPage: 1,
+        articleList: [
           {
-            labels: [
-              {
-                labelCode: labelId,
-                frontPage: 1,
-                articleList: [
-                  {
-                    articleId: 'B100001',
-                    articleName: 'OAP DISPENSER LARGE',
-                    nfcUrl: 'http://www.solumesl.com',
-                    data: {
-                      ARTICLE_ID: 'B100001',
-                      ARTICLE_NAME: 'OAP DISPENSER LARGE',
-                      NFC_URL: 'http://www.solum.com/p/B100001',
-                      SALE_PRICE: '$100',
-                      DISCOUNT_PRICE: '$90',
-                    },
-                  },
-                ],
-                contents: [
-                  {
-                    contentType: 'image',
-                    imgBase64: content,
-                    pageIndex: 1,
-                    skipChecksumValidation: true,
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            headers: {
-              Authorization: AUTH_TOKEN,
+            articleId: 'B100001',
+            articleName: 'OAP DISPENSER LARGE',
+            nfcUrl: 'http://www.solumesl.com',
+            data: {
+              ARTICLE_ID: 'B100001',
+              ARTICLE_NAME: 'OAP DISPENSER LARGE',
+              NFC_URL: 'http://www.solum.com/p/B100001',
+              SALE_PRICE: '$100',
+              DISCOUNT_PRICE: '$90',
             },
           },
-        );
-      }
+        ],
+        contents: [
+          {
+            contentType: 'image',
+            imgBase64: content,
+            pageIndex: 1,
+            skipChecksumValidation: true,
+          },
+        ],
+      }));
+
+      await this.httpService.axiosRef.post(
+        ENDPOINT,
+        {
+          labels,
+        },
+        {
+          headers: {
+            Authorization: AUTH_TOKEN,
+          },
+        },
+      );
     } catch (e) {
       const message = e.message;
       const isunauthorized = message.includes('401');
