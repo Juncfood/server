@@ -8,11 +8,11 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { AdTimeZone } from '@prisma/client';
 
 import { AdService } from './ad.service';
 import { CreateAdInput } from './dtos/create-ad.dto';
 import { UpdateAdInput } from './dtos/update-ad.dto';
-import { PreoccupiedQuery } from './queries/preoccupied.query';
 
 @Controller('ad')
 export class AdController {
@@ -23,11 +23,12 @@ export class AdController {
     return this.adService.findAllOccupied();
   }
 
-  @Get('preoccupied')
-  async findPreoccupiedAds(@Query() query: PreoccupiedQuery) {
-    const { lindId, timeZone } = query;
-
-    return this.adService.findManyByLineIdAndTimeZone(lindId, timeZone);
+  @Get()
+  async findAds(
+    @Query('lineId') lineId: string,
+    @Query('timeZone') timeZone: AdTimeZone,
+  ) {
+    return this.adService.findManyByLineIdAndTimeZone(lineId, timeZone);
   }
 
   @Post('new')
