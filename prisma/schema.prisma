@@ -1,0 +1,53 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://postgres:nHKkYU-_uXFT9mD@db.nwllvhheepuafgifrtlu.supabase.co:5432/postgres"
+}
+
+enum AdType {
+  DOORSIDELEFT
+  DOORSIDERIGHT
+  UPPERSIDE
+}
+
+model Ad {
+  id       String  @id @default(uuid())
+  title    String?
+  imageUrl String?
+
+  type AdType
+
+  occupied Boolean @default(false)
+
+  line   Line   @relation(fields: [lineId], references: [id])
+  lineId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 호선
+model Line {
+  id        String    @id @default(uuid())
+  name      String
+  stations  Station[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  ads       Ad[]
+}
+
+// 역
+model Station {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  line      Line?    @relation(fields: [lineId], references: [id])
+  lineId    String?
+}
