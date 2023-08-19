@@ -49,4 +49,14 @@ export class AdController {
   async deleteOneById(@Param('id') id: string) {
     return this.adService.deleteOneById(id);
   }
+
+  @Get('init')
+  async initAds() {
+    return this.adService.initAds();
+  }
+
+  @Get('init/adPerformance')
+  async initAdPerformance() {
+    return this.adService.initAdPerformance();
+  }
 }
