@@ -17,6 +17,14 @@ export class AdService {
     });
   }
 
+  async findAllPerformances(adId: string) {
+    return this.prisma.adPerformance.findMany({
+      where: {
+        adId,
+      },
+    });
+  }
+
   async findManyByLineIdAndTimeZone(lineId: string, timeZone: AdTimeZone) {
     return this.prisma.ad.findMany({
       where: {

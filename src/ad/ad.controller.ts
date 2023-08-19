@@ -18,9 +18,14 @@ import { UpdateAdInput } from './dtos/update-ad.dto';
 export class AdController {
   constructor(private readonly adService: AdService) {}
 
-  @Get('all')
+  @Get('occupied')
   async findAll() {
     return this.adService.findAllOccupied();
+  }
+
+  @Get('performance/:id')
+  async findAllPerformances(@Param('id') id: string) {
+    return this.adService.findAllPerformances(id);
   }
 
   @Get()
