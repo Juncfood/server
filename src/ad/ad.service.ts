@@ -389,14 +389,17 @@ export class AdService {
         // set adId to the ad's id
 
         for (const cpc of midtimeCpcNumbers) {
+          const currentIdx = midtimeCpcNumbers.indexOf(cpc);
+
           const dateString = `${today.getFullYear()}-${today.getMonth() + 1}-${
-            today.getDate() - midtimeCpcNumbers.indexOf(cpc)
+            today.getDate() - currentIdx
           }`;
           await this.prisma.adPerformance.create({
             data: {
               adId: ad.id,
               dateString,
               cpc,
+              scanCount: 3000 - cpc,
             },
           });
         }
@@ -410,6 +413,7 @@ export class AdService {
               adId: ad.id,
               dateString,
               cpc,
+              scanCount: 3000 - cpc,
             },
           });
         }

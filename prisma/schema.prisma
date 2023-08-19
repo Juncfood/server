@@ -56,7 +56,8 @@ model AdPerformance {
 
   dateString String
 
-  cpc Int
+  cpc       Int
+  scanCount Int
 
   ad   Ad?     @relation(fields: [adId], references: [id])
   adId String?
