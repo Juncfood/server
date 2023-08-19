@@ -1,4 +1,12 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 
 import { AdService } from './ad.service';
 import { CreateAdInput } from './dtos/create-ad.dto';
@@ -23,7 +31,7 @@ export class AdController {
     return this.adService.updateAd(body);
   }
 
-  @Post(':id/unregister')
+  @Patch('unregister/:id')
   async deregisterAd(@Param('id') id: string) {
     return this.adService.initAd(id);
   }
