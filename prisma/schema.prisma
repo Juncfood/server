@@ -58,13 +58,15 @@ model AdPerformance {
 
 // 호선
 model Line {
-  id           String    @id @default(uuid())
-  name         String
-  primaryColor String    @default("#000000")
-  stations     Station[]
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  ads          Ad[]
+  id               String    @id @default(uuid())
+  name             String
+  primaryColor     String    @default("#000000")
+  startStationName String    @default("시청")
+  endStationName   String    @default("종로3가")
+  stations         Station[]
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  ads              Ad[]
 }
 
 // 역
