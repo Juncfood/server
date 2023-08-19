@@ -31,7 +31,7 @@ export class AdController {
     return this.adService.updateAd(body);
   }
 
-  @Patch('unregister/:id')
+  @Patch('deregister/:id')
   async deregisterAd(@Param('id') id: string) {
     return this.adService.initAd(id);
   }
