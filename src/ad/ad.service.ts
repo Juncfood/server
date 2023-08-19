@@ -110,45 +110,55 @@ export class AdService {
     const jwtToken = await this.getAuthToken();
     const AUTH_TOKEN = `Bearer ${jwtToken}`;
 
+    const labelIds = [
+      '0848A6D0E1D7',
+      '0848A6D6E1D1',
+      '0848A6D8E1DF',
+      '0848A6E2E1D6',
+      '0848A70EE1D5',
+    ];
+
     try {
-      await this.httpService.axiosRef.post(
-        ENDPOINT,
-        {
-          labels: [
-            {
-              labelCode: '0848A6D6E1D1',
-              frontPage: 1,
-              articleList: [
-                {
-                  articleId: 'B100001',
-                  articleName: 'OAP DISPENSER LARGE',
-                  nfcUrl: 'http://www.solumesl.com',
-                  data: {
-                    ARTICLE_ID: 'B100001',
-                    ARTICLE_NAME: 'OAP DISPENSER LARGE',
-                    NFC_URL: 'http://www.solum.com/p/B100001',
-                    SALE_PRICE: '$100',
-                    DISCOUNT_PRICE: '$90',
+      for (const labelId of labelIds) {
+        await this.httpService.axiosRef.post(
+          ENDPOINT,
+          {
+            labels: [
+              {
+                labelCode: labelId,
+                frontPage: 1,
+                articleList: [
+                  {
+                    articleId: 'B100001',
+                    articleName: 'OAP DISPENSER LARGE',
+                    nfcUrl: 'http://www.solumesl.com',
+                    data: {
+                      ARTICLE_ID: 'B100001',
+                      ARTICLE_NAME: 'OAP DISPENSER LARGE',
+                      NFC_URL: 'http://www.solum.com/p/B100001',
+                      SALE_PRICE: '$100',
+                      DISCOUNT_PRICE: '$90',
+                    },
                   },
-                },
-              ],
-              contents: [
-                {
-                  contentType: 'image',
-                  imgBase64: content,
-                  pageIndex: 1,
-                  skipChecksumValidation: true,
-                },
-              ],
-            },
-          ],
-        },
-        {
-          headers: {
-            Authorization: AUTH_TOKEN,
+                ],
+                contents: [
+                  {
+                    contentType: 'image',
+                    imgBase64: content,
+                    pageIndex: 1,
+                    skipChecksumValidation: true,
+                  },
+                ],
+              },
+            ],
           },
-        },
-      );
+          {
+            headers: {
+              Authorization: AUTH_TOKEN,
+            },
+          },
+        );
+      }
     } catch (e) {
       const message = e.message;
       const isunauthorized = message.includes('401');
