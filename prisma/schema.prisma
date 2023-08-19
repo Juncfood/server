@@ -10,6 +10,12 @@ datasource db {
   url      = "postgresql://postgres:nHKkYU-_uXFT9mD@db.nwllvhheepuafgifrtlu.supabase.co:5432/postgres"
 }
 
+enum AdTimeZone {
+  MORNING_RUSH
+  MIDTIME
+  DINNER_RUSH
+}
+
 enum AdType {
   DOORSIDELEFT
   DOORSIDERIGHT
@@ -21,12 +27,30 @@ model Ad {
   title    String?
   imageUrl String
 
-  type AdType
+  type     AdType
+  timeZone AdTimeZone
 
-  occupied Boolean @default(false)
+  occupied    Boolean @default(false)
+  preoccupied Boolean @default(false)
 
   line   Line   @relation(fields: [lineId], references: [id])
   lineId String
+
+  performances AdPerformance[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AdPerformance {
+  id String @id @default(uuid())
+
+  dateString String
+
+  cpc Int
+
+  ad   Ad?     @relation(fields: [adId], references: [id])
+  adId String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

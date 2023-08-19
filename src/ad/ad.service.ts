@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { AdType } from '@prisma/client';
+import { AdTimeZone, AdType } from '@prisma/client';
 
 import { PrismaService } from '../prisma.service';
 import { CreateAdInput } from './dtos/create-ad.dto';
@@ -9,16 +9,26 @@ import { UpdateAdInput } from './dtos/update-ad.dto';
 export class AdService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findManyByLineId(lineId: string) {
+  async findAllOccupied() {
+    return this.prisma.ad.findMany({
+      where: {
+        occupied: true,
+      },
+    });
+  }
+
+  async findManyByLineIdAndTimeZone(lineId: string, timeZone: AdTimeZone) {
     return this.prisma.ad.findMany({
       where: {
         lineId,
+        timeZone,
+        preoccupied: true,
       },
     });
   }
 
   async createAd(body: CreateAdInput) {
-    const { type, lineId } = body;
+    const { type, lineId, timeZone } = body;
 
     let baseImageUrl = '';
 
@@ -37,8 +47,9 @@ export class AdService {
     const newAd = await this.prisma.ad.create({
       data: {
         type,
+        timeZone,
         imageUrl: baseImageUrl,
-        occupied: false,
+        occupied: true,
         line: {
           connect: {
             id: lineId,
