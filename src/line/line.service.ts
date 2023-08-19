@@ -7,6 +7,10 @@ import { CreateLineInput } from './dtos/create-line.dto';
 export class LineService {
   constructor(private prisma: PrismaService) {}
 
+  async getAll() {
+    return this.prisma.line.findMany();
+  }
+
   async createLine(body: CreateLineInput) {
     const newLine = await this.prisma.line.create({
       data: {

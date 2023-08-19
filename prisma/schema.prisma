@@ -19,7 +19,7 @@ enum AdType {
 model Ad {
   id       String  @id @default(uuid())
   title    String?
-  imageUrl String?
+  imageUrl String
 
   type AdType
 
