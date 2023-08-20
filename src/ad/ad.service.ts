@@ -17,6 +17,49 @@ export class AdService {
     private readonly httpService: HttpService,
   ) {}
 
+  async countPerformance(adId: string) {
+    const ad = await this.prisma.ad.findUnique({
+      where: {
+        id: adId,
+      },
+    });
+
+    const today = new Date();
+
+    const dateString = `${today.getFullYear()}-${
+      today.getMonth() + 1
+    }-${today.getDate()}`;
+
+    const todayPerformance = await this.prisma.adPerformance.findFirst({
+      where: {
+        dateString,
+        adId,
+      },
+    });
+
+    if (!todayPerformance) {
+      await this.prisma.adPerformance.create({
+        data: {
+          adId,
+          cpc: 0,
+          scanCount: 1,
+          dateString,
+        },
+      });
+    } else {
+      await this.prisma.adPerformance.update({
+        where: {
+          id: todayPerformance.id,
+        },
+        data: {
+          scanCount: todayPerformance.scanCount + 1,
+        },
+      });
+    }
+
+    return ad.landingUrl;
+  }
+
   async getAuthToken() {
     const authToken = await this.prisma.authToken.findFirst();
 
@@ -64,7 +107,7 @@ export class AdService {
     return token;
   }
 
-  async createQrCodeImage(url: string, title: string) {
+  async createQrCodeImage(id: string, title: string) {
     const FRAME_WIDTH = 250;
     const FRAME_HEIGHT = 122;
     const QR_CODE_SIZE = 60;
@@ -75,6 +118,9 @@ export class AdService {
       width: QR_CODE_SIZE,
       margin: 0,
     };
+
+    const url = `https://esl.lucas-gong.dev/ad/link/${id}`;
+
     const qrCodeDataUrl = await qr.toDataURL(url, qrCodeOptions);
 
     const canvas = createCanvas(FRAME_WIDTH, FRAME_HEIGHT);
@@ -240,10 +286,7 @@ export class AdService {
       },
     });
 
-    const content = await this.createQrCodeImage(
-      updatedAd.landingUrl,
-      updatedAd.title,
-    );
+    const content = await this.createQrCodeImage(updatedAd.id, updatedAd.title);
 
     const success = await this.uploadToEsl(content);
 

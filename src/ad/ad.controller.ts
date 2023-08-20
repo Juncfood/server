@@ -1,3 +1,5 @@
+import { Response } from 'express';
+
 import {
   Body,
   Controller,
@@ -7,6 +9,7 @@ import {
   Patch,
   Post,
   Query,
+  Res,
 } from '@nestjs/common';
 import { AdTimeZone } from '@prisma/client';
 
@@ -17,6 +20,13 @@ import { UpdateAdInput } from './dtos/update-ad.dto';
 @Controller('ad')
 export class AdController {
   constructor(private readonly adService: AdService) {}
+
+  @Get('link/:id')
+  async countPerformance(@Param('id') id: string, @Res() res: Response) {
+    const redirectUrl = await this.adService.countPerformance(id);
+
+    return res.redirect(redirectUrl);
+  }
 
   @Get('occupied')
   async findAll() {
